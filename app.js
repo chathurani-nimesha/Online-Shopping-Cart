@@ -4,7 +4,9 @@ const API_URL ="https://fakestoreapi.com/products";
 
 let products= [];
 
-async function LoadProducts() {
+let cart =[];
+
+async function loadProducts() {
     try{
         const response = await fetch(API_URL);
         const data = await response.json();
@@ -49,7 +51,7 @@ function displayProducts(){
                             $${product.price.toFixed(2)}
                         </h5>
 
-                        <button class="btn btn-primary mt-auto">
+                        <button class="btn btn-primary mt-auto" onclick="addToCart(${product.id})">
                             Add to Cart
                         </button>
 
@@ -62,4 +64,110 @@ function displayProducts(){
     document.getElementById("productList").innerHTML = productHTML;
 }
 
-LoadProducts();
+loadProducts();
+
+function addToCart(productId) {
+
+    const product = products.find(
+        item => item.id === productId
+    );
+
+    const existingItem = cart.find(
+        item => item.id === productId
+    );
+
+    if (existingItem) {
+
+        existingItem.quantity++;
+
+    } else {
+
+        cart.push({
+            ...product,
+            quantity: 1
+        });
+
+    }
+
+    displayCart();
+}
+
+function displayCart() {
+
+    let cartHTML = "";
+    let total = 0;
+    let count = 0;
+
+    cart.forEach(function(item) {
+
+        const subtotal = item.price * item.quantity;
+
+        total += subtotal;
+        count += item.quantity;
+
+        cartHTML += `
+            <div class="card mb-3">
+                <div class="card-body">
+
+                    <h5>${item.title}</h5>
+
+                    <p>
+                        Price: $${item.price.toFixed(2)}
+                    </p>
+
+                    <p>
+                        Quantity: ${item.quantity}
+                    </p>
+
+                    <p>
+                        Subtotal: $${subtotal.toFixed(2)}
+                    </p>
+
+                    <button
+                        class="btn btn-danger btn-sm"
+                        onclick="removeFromCart(${item.id})">
+
+                        Remove
+
+                    </button>
+
+                </div>
+            </div>
+        `;
+    });
+
+    document.getElementById("cartList").innerHTML =
+        cartHTML || "<p>Your cart is empty.</p>";
+
+    document.getElementById("cartCount").textContent = count;
+
+    document.getElementById("cartTotal").textContent =
+        total.toFixed(2);
+}
+
+function removeFromCart(productId) {
+
+    cart = cart.filter(function(item) {
+        return item.id !== productId;
+    });
+
+    displayCart();
+}
+
+document.getElementById("clearCartButton")
+    .addEventListener("click", function() {
+
+        cart = [];
+
+        displayCart();
+    });
+
+
+    document.getElementById("cartButton")
+    .addEventListener("click", function() {
+
+        document.getElementById("cartSection")
+            .scrollIntoView({
+                behavior: "smooth"
+            });
+    });
